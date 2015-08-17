@@ -1,4 +1,11 @@
-﻿using System;
+﻿// ------------------------------------------------------------------------------
+// RokuLoader 1.0
+// Copyright (C) 2015 Patrick Fournier
+// http://github.com/patrick0xf/RokuLoader
+// Under MIT License
+// ------------------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -85,7 +92,7 @@ namespace RokuLoader
             httpWebRequest.UserAgent = "Mozilla/4.0 (MSIE 6.0; Windows NT 5.1)";
             httpWebRequest.CookieContainer = new CookieContainer();
             httpWebRequest.ContentLength = formData.Length;
-            httpWebRequest.Credentials = new NetworkCredential(username, password);
+            if(username != "none") httpWebRequest.Credentials = new NetworkCredential(username, password);
 
             using (var requestStream = httpWebRequest.GetRequestStream())
             {
@@ -168,8 +175,6 @@ namespace RokuLoader
 
         private static bool IsRokuReacheable(string hostname)
         {
-            Console.WriteLine(Uri.CheckHostName(hostname));
-
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
                 try

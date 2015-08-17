@@ -1,4 +1,11 @@
-﻿using System.Reflection;
+﻿// ------------------------------------------------------------------------------
+// RokuLoader 1.0
+// Copyright (C) 2015 Patrick Fournier
+// http://github.com/patrick0xf/RokuLoader
+// Under MIT License
+// ------------------------------------------------------------------------------
+
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
