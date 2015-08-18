@@ -7,6 +7,7 @@ device's Developer Application Interface in one command.
 Under MIT License
 
 [Landing Page on GitHub](http://patrick0xf.github.io/RokuLoader/)
+
 [Code on GitHub](http://github.com/patrick0xf/RokuLoader)
 
 For details regarding Roku development, visit
