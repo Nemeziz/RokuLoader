@@ -1,11 +1,13 @@
 RokuLoader 1.0
-
+--------------------------------------------------------------------------------
 The RokuLoader is a command line interface for Windows that allowes developer
 builds of Roku channels (packaged az .zip files) to be uploaded to a Roku
 device's Developer Application Interface in one command.
 
-Under MIT License http://github.com/patrick0xf/RokuLoader
---------------------------------------------------------------------------------
+Under MIT License
+
+[Landing Page on GitHub](http://patrick0xf.github.io/RokuLoader/)
+[Code on GitHub](http://github.com/patrick0xf/RokuLoader)
 
 For details regarding Roku development, visit
 http://sdkdocs.roku.com/display/sdkdoc/Developer+Guide
