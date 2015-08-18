@@ -10,7 +10,9 @@ using CommandLine.Text;
 
 namespace RokuLoader
 {
-
+    /// <summary>
+    /// Defines options for the command line parameters
+    /// </summary>
     public class Options
     {
         [Option('h', "hostname", Required = true, HelpText = "The hostname or IP address of the Roku Streaming Player.")]

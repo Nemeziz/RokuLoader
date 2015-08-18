@@ -10,30 +10,41 @@ using System.IO;
 
 namespace RokuLoader
 {
-    public class ZipCheck
+    /// <summary>
+    /// Provides helper for checking a local Zip file
+    /// </summary>
+    public static class ZipCheck
     {
-        public static bool CheckSignature(string filepath)
+        /// <summary>
+        /// Returns whether a file has a typical Zip file header signature
+        /// </summary>
+        /// <param name="filePath">The full local path to the file</param>
+        /// <returns></returns>
+        public static bool CheckSignature(string filePath)
         {
             try
             {
                 const string signatureZip = "50-4B-03-04";
                 const int signatureLength = 4;
 
-                if (string.IsNullOrEmpty(filepath)) return false;
+                if (string.IsNullOrEmpty(filePath)) return false;
                 if (string.IsNullOrEmpty(signatureZip)) return false;
-                using (var fs = new FileStream(filepath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    if (fs.Length < signatureLength)
-                        return false;
+                    if (fs.Length < signatureLength) return false;
+
                     var signature = new byte[signatureLength];
                     var bytesRequired = signatureLength;
                     var index = 0;
+
                     while (bytesRequired > 0)
                     {
                         var bytesRead = fs.Read(signature, index, bytesRequired);
                         bytesRequired -= bytesRead;
                         index += bytesRead;
                     }
+
                     var actualSignature = BitConverter.ToString(signature);
                     return actualSignature == signatureZip;
                 }

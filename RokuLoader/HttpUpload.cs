@@ -15,12 +15,24 @@ using System.Text.RegularExpressions;
 
 namespace RokuLoader
 {
+    /// <summary>
+    /// This class provides helper function for uploading a file to the Roku device's developer web server interface
+    /// </summary>
     public static class HttpUpload
     {
+        /// <summary>
+        /// Posts the specified file to the Roku device's developer web server interface using the credentials provided
+        /// </summary>
+        /// <param name="hostname">The host name or IP address of the Roku device</param>
+        /// <param name="username">The username for authenticating to the web server interface</param>
+        /// <param name="password">The password for authenticating to the web interface</param>
+        /// <param name="filePath">The full local path to the file</param>
+        /// <returns>Returns true if the file was succesfully posted; otherwise returns false</returns>
         public static bool PostFile(string hostname, string username, string password, string filePath)
         {
             var success = false;
 
+            //Check whether the hostname is valid
             if (!Uri.IsWellFormedUriString($"http://{hostname}/", UriKind.Absolute))
             {
                 Console.WriteLine($"Invalid hostname \"{hostname}\"");
@@ -29,19 +41,22 @@ namespace RokuLoader
 
             var uri = new Uri($"http://{hostname}/plugin_install");
 
+            //Check whether there is a web port opened at that address
             Console.WriteLine($"Connecting to {hostname}...");
             if (!IsRokuReacheable(hostname)) return false;
 
+            //Uploads the file as part of a multi-part form data post operation
             Console.WriteLine("Uploading {0}...", Path.GetFileName(filePath));
             try
             {
-                var response = MultipartFormDataPost(uri, filePath, username, password);
+                var response = MultipartFormDataPost(uri, username, password, filePath);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     var responseStream = response.GetResponseStream();
                     if (responseStream != null)
                         using (var reader = new StreamReader(responseStream, Encoding.UTF8))
                         {
+                            //Parse the body of the web response for display at the console (strip header and HTML tags)
                             var responseText = reader.ReadToEnd();
                             if (responseText.Contains("<center>"))
                             {
@@ -55,6 +70,7 @@ namespace RokuLoader
                             }
                             else
                             {
+                                //Unknown message, display entire body instead
                                 Console.WriteLine(responseText);
                             }
 
@@ -70,7 +86,15 @@ namespace RokuLoader
 
         }
 
-        public static HttpWebResponse MultipartFormDataPost(Uri postUrl, string filePath, string username, string password)
+        /// <summary>
+        /// Prepares the multi-part form data and post to the Roku device's developer web server interace
+        /// </summary>
+        /// <param name="postUrl">The Uri of the installation form on the Roku device</param>
+        /// <param name="username">The username for authenticating to the web server interface</param>
+        /// <param name="password">The password for authenticating to the web interface</param>
+        /// <param name="filePath">The full local path to the file</param>
+        /// <returns>Returns the http web response</returns>
+        private static HttpWebResponse MultipartFormDataPost(Uri postUrl, string username, string password, string filePath)
         {
             var boundary = "-----------------------------" + Encoding.UTF8.GetBytes(DateTime.Now.Ticks.ToString());
             var contentType = "multipart/form-data; boundary=" + boundary;
@@ -82,6 +106,16 @@ namespace RokuLoader
                 boundary));
         }
 
+
+        /// <summary>
+        /// Post pre-constructed form data the Roku device's developer web server interace
+        /// </summary>
+        /// <param name="postUrl">The Uri of the installation form on the Roku device</param>
+        /// <param name="username">The username for authenticating to the web server interface</param>
+        /// <param name="password">The password for authenticating to the web interface</param>
+        /// <param name="contentType">The content type associated with the file to post</param>
+        /// <param name="formData">The pre-constructed form data</param>
+        /// <returns></returns>
         private static HttpWebResponse PostForm(Uri postUrl, string username, string password, string contentType, byte[] formData)
         {
             var httpWebRequest = WebRequest.Create(postUrl) as HttpWebRequest;
@@ -92,6 +126,9 @@ namespace RokuLoader
             httpWebRequest.UserAgent = "Mozilla/4.0 (MSIE 6.0; Windows NT 5.1)";
             httpWebRequest.CookieContainer = new CookieContainer();
             httpWebRequest.ContentLength = formData.Length;
+
+            //Older Roku firmware may not require a username and password
+            //Disable by calling the   --username="none"   option
             if(username != "none") httpWebRequest.Credentials = new NetworkCredential(username, password);
 
             using (var requestStream = httpWebRequest.GetRequestStream())
@@ -102,6 +139,13 @@ namespace RokuLoader
             return httpWebRequest.GetResponse() as HttpWebResponse;
         }
 
+
+        /// <summary>
+        /// Constructs a form data byte array given the parameters to post to the form as a key/value pairs dictionary
+        /// </summary>
+        /// <param name="postParameters">A key/value pairs dictionary representing the form field name and values</param>
+        /// <param name="boundary">A random but static form boundary</param>
+        /// <returns></returns>
         private static byte[] GetMultipartFormData(Dictionary<string, object> postParameters, string boundary)
         {
             var stream = new MemoryStream();
@@ -135,7 +179,10 @@ namespace RokuLoader
             return buffer;
         }
 
-        public class FileParameter
+        /// <summary>
+        /// Holds file parameter information
+        /// </summary>
+        private class FileParameter
         {
             public byte[] File { get; }
             public string FileName { get; }
@@ -149,6 +196,11 @@ namespace RokuLoader
             }
         }
 
+        /// <summary>
+        /// Returns the content of a file as a byte array
+        /// </summary>
+        /// <param name="filePath">The full local path to the file</param>
+        /// <returns></returns>
         private static byte[] ReadFile(string filePath)
         {
             var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
@@ -168,11 +220,21 @@ namespace RokuLoader
             return buffer;
         }
 
+        /// <summary>
+        /// Strips HTML tags from a string
+        /// </summary>
+        /// <param name="strHtml"></param>
+        /// <returns></returns>
         private static string StripHtml(string strHtml)
         {
             return Regex.Replace(strHtml, "<(.|\n)*?>", "");
         }
 
+        /// <summary>
+        /// Checks if a device at the host name specified is listening to port 80
+        /// </summary>
+        /// <param name="hostname">The host name or IP address of the Roku device</param>
+        /// <returns></returns>
         private static bool IsRokuReacheable(string hostname)
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
